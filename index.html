@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Payswift — Smart Payment Reminder App</title>
+<meta name="description" content="Payswift is an offline payment tracking and reminder app that helps small businesses manage customer pending payments easily.">
+<style>
+  :root{
+    --bg:#F5F8FF;
+    --surface:#FFFFFF;
+    --surface-2:#F0F4FF;
+    --text:#0E1526;
+    --text-soft:#5B6577;
+    --border:#E1E8FB;
+    --brand:#155EEF;
+    --brand-2:#4F46E5;
+    --brand-deep:#0B2F6B;
+    --brand-soft:#E8F0FE;
+    --emerald:#16A34A;
+    --emerald-soft:#E4F5EA;
+    --red:#DC2626;
+    --red-soft:#FCEAEA;
+    --gold:#F2A93B;
+    --radius:16px;
+    --shadow:0 24px 48px -24px rgba(11,47,107,0.28);
+    --header-h:72px;
+  }
+  html[data-theme="dark"]{
+    --bg:#0A1220;
+    --surface:#111A2E;
+    --surface-2:#0E1830;
+    --text:#EAF0FB;
+    --text-soft:#93A1C4;
+    --border:#1E2A48;
+    --brand:#5B8CFF;
+    --brand-2:#7C79F0;
+    --brand-deep:#0B2F6B;
+    --brand-soft:#16223F;
+    --emerald:#33C46A;
+    --emerald-soft:#12271C;
+    --red:#F16565;
+    --red-soft:#2C1518;
+    --gold:#F2A93B;
+    --shadow:0 24px 48px -24px rgba(0,0,0,0.6);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    transition:background .25s ease, color .25s ease;
+  }
+  a{color:inherit;text-decoration:none;}
+  img,svg{display:block;max-width:100%;}
+  button{font:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+  ul{list-style:none;}
+  section{max-width:1180px;margin:0 auto;padding:88px 24px;}
+  @media (max-width:640px){ section{padding:64px 20px;} }
+
+  .section-head{max-width:640px;margin:0 auto 46px;text-align:center;}
+  .section-head .kicker{
+    font-size:0.78rem;font-weight:700;color:var(--brand);
+    text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;display:block;
+  }
+  .section-head h2{font-size:clamp(1.6rem,3.4vw,2.2rem);font-weight:800;line-height:1.2;}
+  .section-head p{color:var(--text-soft);margin-top:12px;font-size:1rem;line-height:1.6;}
+
+  /* ---------------- Header ---------------- */
+  header{
+    position:sticky;top:0;z-index:100;height:var(--header-h);
+    background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-wrap{
+    max-width:1180px;height:100%;margin:0 auto;padding:0 24px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;}
+  .credit-line{font-size:0.66rem;font-weight:500;color:var(--text-soft);margin-top:1px;}
+  .logo-icon{
+    width:38px;height:38px;border-radius:10px;flex-shrink:0;
+    background:linear-gradient(135deg, var(--brand), var(--brand-deep));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 14px -4px rgba(21,94,239,0.55);
+  }
+  nav.links{display:flex;gap:28px;font-size:0.93rem;color:var(--text-soft);font-weight:500;}
+  nav.links a:hover{color:var(--brand);}
+  .header-actions{display:flex;align-items:center;gap:14px;}
+  .theme-toggle{
+    width:38px;height:38px;border-radius:50%;
+    border:1px solid var(--border);background:var(--surface);
+    display:flex;align-items:center;justify-content:center;font-size:1rem;
+  }
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 22px;border-radius:10px;font-weight:700;font-size:0.92rem;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-brand{
+    background:linear-gradient(135deg, var(--brand), var(--brand-2));
+    color:#fff;box-shadow:0 10px 24px -10px rgba(21,94,239,0.6);
+  }
+  .btn-brand:hover{transform:translateY(-2px);}
+  .btn-outline{border:1.5px solid var(--border);background:var(--surface);}
+  .menu-btn{display:none;font-size:1.4rem;}
+  @media (max-width:840px){
+    nav.links{display:none;}
+    .menu-btn{display:block;}
+  }
+  #mobile-nav{
+    display:none;flex-direction:column;gap:4px;
+    background:var(--surface);border-bottom:1px solid var(--border);
+    padding:10px 20px 18px;
+  }
+  #mobile-nav.open{display:flex;}
+  #mobile-nav a{padding:12px 4px;font-weight:600;border-bottom:1px solid var(--border);}
+  #mobile-nav a:last-child{border-bottom:none;}
+
+  /* ---------------- Hero ---------------- */
+  .hero-section{
+    position:relative;overflow:hidden;padding:0;
+    max-width:none;
+  }
+  .hero-bg{
+    position:absolute;inset:0;z-index:0;
+    background:
+      radial-gradient(1100px 700px at 82% 20%, var(--brand) 0%, var(--brand-2) 45%, transparent 72%),
+      var(--bg);
+    opacity:0.16;
+  }
+  html[data-theme="dark"] .hero-bg{opacity:0.30;}
+  .hero-inner{
+    position:relative;z-index:1;max-width:1180px;margin:0 auto;
+    padding:70px 24px 90px;
+    display:grid;grid-template-columns:1.05fr 0.95fr;gap:50px;align-items:center;
+  }
+  @media (max-width:960px){ .hero-inner{grid-template-columns:1fr;padding:44px 20px 60px;} }
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:0.78rem;font-weight:700;color:var(--brand-deep);
+    background:var(--brand-soft);border:1px solid var(--border);
+    padding:7px 14px;border-radius:999px;margin-bottom:22px;
+  }
+  html[data-theme="dark"] .eyebrow{color:var(--brand);}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--brand);}
+
+  .hero-inner h1{
+    font-size:clamp(2.1rem,5vw,3.2rem);font-weight:800;line-height:1.12;margin-bottom:20px;
+  }
+  .hero-inner h1 .accent{
+    background:linear-gradient(135deg, var(--brand), var(--brand-2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero-inner p.lede{
+    font-size:1.08rem;line-height:1.65;color:var(--text-soft);max-width:48ch;margin-bottom:30px;
+  }
+  .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:34px;}
+
+  .quicklinks{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:460px;margin-bottom:30px;}
+  @media (max-width:460px){ .quicklinks{grid-template-columns:repeat(2,1fr);} }
+  .quicklink{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;}
+  .quicklink .ic{
+    width:46px;height:46px;border-radius:12px;background:var(--brand-soft);
+    color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+  }
+  .quicklink span{font-size:0.78rem;font-weight:600;color:var(--text-soft);line-height:1.3;}
+
+  .secure-badge{display:flex;align-items:center;gap:12px;}
+  .secure-badge .shield{
+    width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg, var(--brand), var(--brand-deep));
+    color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;
+  }
+  .secure-badge .t{font-weight:700;font-size:0.92rem;}
+  .secure-badge .s{font-size:0.8rem;color:var(--text-soft);}
+
+  /* ---------------- Phone mockup ---------------- */
+  .phone-stage{position:relative;display:flex;justify-content:center;align-items:center;min-height:520px;}
+  .deco-coin{
+    position:absolute;border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, #FFD87A, var(--gold) 62%, #C97F12 100%);
+    box-shadow:0 12px 24px -8px rgba(0,0,0,0.35), inset 0 0 0 3px rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;color:#7a4a06;font-weight:800;
+  }
+  .deco-coin.c1{width:64px;height:64px;font-size:1.5rem;right:-6px;bottom:70px;z-index:2;}
+  .deco-coin.c2{width:46px;height:46px;font-size:1.1rem;right:44px;bottom:36px;z-index:1;}
+  .deco-chart{
+    position:absolute;right:-30px;top:60px;display:flex;align-items:flex-end;gap:6px;
+    height:90px;opacity:0.9;z-index:1;
+  }
+  .deco-chart b{width:14px;border-radius:4px 4px 0 0;background:linear-gradient(180deg, var(--brand), var(--brand-2));}
+  @media (max-width:960px){ .deco-coin, .deco-chart{display:none;} }
+
+  .phone{
+    width:290px;background:#0d1117;border-radius:38px;padding:12px;
+    box-shadow:0 40px 80px -30px rgba(11,47,107,0.55);
+    position:relative;
+  }
+  .phone::before{
+    content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    width:90px;height:22px;background:#0d1117;border-radius:0 0 14px 14px;z-index:3;
+  }
+  .phone-screen{
+    background:var(--surface);border-radius:28px;overflow:hidden;padding:20px 16px 14px;
+    min-height:520px;position:relative;
+  }
+  .p-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .p-brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:0.98rem;}
+  .p-brand .mini-logo{
+    width:26px;height:26px;border-radius:7px;
+    background:linear-gradient(135deg, var(--brand), var(--brand-deep));
+    display:flex;align-items:center;justify-content:center;
+  }
+  .p-hello{font-size:0.94rem;font-weight:700;margin-bottom:2px;}
+  .p-date{font-size:0.72rem;color:var(--text-soft);margin-bottom:14px;}
+  .p-overview{
+    background:linear-gradient(135deg, var(--brand-2), var(--brand));
+    border-radius:16px;padding:16px;color:#fff;margin-bottom:14px;
+  }
+  .p-overview .lbl{font-size:0.72rem;opacity:0.85;margin-bottom:10px;font-weight:600;}
+  .p-overview .stats{display:flex;justify-content:space-between;}
+  .p-overview .stat{text-align:center;flex:1;}
+  .p-overview .stat .n{font-weight:800;font-size:0.98rem;}
+  .p-overview .stat .l{font-size:0.62rem;opacity:0.85;margin-top:2px;line-height:1.2;}
+  .p-row2{display:flex;gap:10px;margin-bottom:10px;}
+  .p-chip{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;}
+  .p-chip .tag{font-size:0.65rem;font-weight:700;display:flex;align-items:center;gap:4px;margin-bottom:6px;}
+  .p-chip.got .tag{color:var(--emerald);}
+  .p-chip.gave .tag{color:var(--red);}
+  .p-chip .amt{font-weight:800;font-size:0.92rem;}
+  .p-chip.got .amt{color:var(--emerald);}
+  .p-chip.gave .amt{color:var(--red);}
+  .p-chip .sub{font-size:0.62rem;color:var(--text-soft);margin-top:2px;}
+  .p-recent{font-size:0.8rem;font-weight:700;margin:14px 0 6px;display:flex;justify-content:space-between;color:var(--text);}
+  .p-empty{
+    text-align:center;padding:28px 10px;color:var(--text-soft);font-size:0.75rem;
+    border:1.5px dashed var(--border);border-radius:12px;
+  }
+  .p-fab{
+    position:absolute;bottom:56px;left:16px;right:16px;
+    background:linear-gradient(135deg, var(--brand-2), var(--brand));
+    color:#fff;text-align:center;padding:11px;border-radius:12px;font-size:0.8rem;font-weight:700;
+  }
+  .p-navbar{
+    position:absolute;bottom:0;left:0;right:0;height:52px;
+    background:var(--surface);border-top:1px solid var(--border);
+    display:flex;justify-content:space-around;align-items:center;font-size:0.62rem;color:var(--text-soft);
+  }
+  .p-navbar .active{color:var(--brand);font-weight:700;}
+
+  /* ---------------- About ---------------- */
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;}
+  @media (max-width:800px){ .about-grid{grid-template-columns:1fr;} }
+  .about-grid p{color:var(--text-soft);line-height:1.75;font-size:1rem;margin-bottom:16px;}
+  .about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .about-stat{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:20px 14px;text-align:center;
+  }
+  .about-stat .n{font-size:1.5rem;font-weight:800;color:var(--brand);}
+  .about-stat .l{font-size:0.78rem;color:var(--text-soft);margin-top:4px;}
+
+  /* ---------------- Features ---------------- */
+  .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media (max-width:900px){ .feature-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:600px){ .feature-grid{grid-template-columns:1fr;} }
+  .feat-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:26px 22px;transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .feat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
+  .feat-card .fic{
+    width:44px;height:44px;border-radius:11px;background:var(--brand-soft);color:var(--brand);
+    display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:16px;
+  }
+  .feat-card h3{font-size:1.04rem;font-weight:700;margin-bottom:8px;}
+  .feat-card p{font-size:0.9rem;color:var(--text-soft);line-height:1.55;}
+
+  /* ---------------- How it works ---------------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;position:relative;}
+  @media (max-width:800px){ .steps{grid-template-columns:1fr;} }
+  .step-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:30px 24px;text-align:center;position:relative;
+  }
+  .step-num{
+    width:44px;height:44px;border-radius:50%;margin:0 auto 18px;
+    background:linear-gradient(135deg, var(--brand), var(--brand-2));color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.05rem;
+  }
+  .step-card h3{font-size:1.02rem;font-weight:700;margin-bottom:8px;}
+  .step-card p{font-size:0.9rem;color:var(--text-soft);line-height:1.55;}
+
+  /* ---------------- Screenshots ---------------- */
+  .shots-row{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;}
+  .shot{width:200px;text-align:center;}
+  .shot-frame{
+    background:#0d1117;border-radius:26px;padding:8px;box-shadow:var(--shadow);margin-bottom:14px;
+  }
+  .shot-screen{
+    background:var(--surface);border-radius:20px;height:340px;padding:14px 12px;
+    display:flex;flex-direction:column;gap:8px;overflow:hidden;
+  }
+  .shot-bar{height:10px;border-radius:5px;background:var(--surface-2);}
+  .shot-bar.w60{width:60%;}
+  .shot-bar.w80{width:80%;}
+  .shot-block{
+    border-radius:10px;background:linear-gradient(135deg, var(--brand-2), var(--brand));
+    height:60px;margin:4px 0;
+  }
+  .shot-line{height:34px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);}
+  .shot-line.green{border-left:3px solid var(--emerald);}
+  .shot-line.red{border-left:3px solid var(--red);}
+  .shot p{font-size:0.85rem;font-weight:600;color:var(--text-soft);}
+
+  /* ---------------- Privacy ---------------- */
+  .privacy-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:20px;
+    padding:40px 34px;max-width:820px;margin:0 auto;
+  }
+  .privacy-card ul{margin:18px 0;display:flex;flex-direction:column;gap:10px;}
+  .privacy-card li{display:flex;gap:10px;font-size:0.92rem;color:var(--text-soft);line-height:1.55;}
+  .privacy-card li .chk{color:var(--brand);font-weight:800;flex-shrink:0;}
+  .privacy-card p{font-size:0.94rem;color:var(--text-soft);line-height:1.65;margin-bottom:6px;}
+  .privacy-actions{display:flex;gap:14px;margin-top:24px;flex-wrap:wrap;}
+
+  /* ---------------- Contact ---------------- */
+  .contact-card{
+    background:linear-gradient(135deg, var(--brand-deep), var(--brand-2));
+    border-radius:22px;padding:56px 40px;text-align:center;color:#fff;
+  }
+  .contact-card h2{font-size:clamp(1.6rem,3.4vw,2.1rem);font-weight:800;margin-bottom:12px;}
+  .contact-card p{color:#dbe6ff;margin-bottom:26px;font-size:1rem;}
+  .contact-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:0.95rem;}
+  .contact-pill{
+    background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);
+    padding:10px 18px;border-radius:999px;font-weight:600;
+  }
+
+  /* ---------------- Footer ---------------- */
+  footer{
+    border-top:1px solid var(--border);padding:32px 24px;text-align:center;
+    font-size:0.85rem;color:var(--text-soft);
+  }
+  footer .flinks{display:flex;gap:18px;justify-content:center;margin-bottom:12px;flex-wrap:wrap;}
+  footer .flinks a:hover{color:var(--brand);}
+
+  /* reveal animation */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<div id="creditBar" style="background:var(--brand-deep);color:#fff;text-align:center;font-size:0.78rem;font-weight:600;padding:7px 12px;letter-spacing:0.02em;">
+  Created by Omraj Gupta
+</div>
+
+<header>
+  <div class="nav-wrap">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="20" height="20" viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="none" stroke="#fff" stroke-width="8"/><path d="M74 24 L86 16 L88 30 Z" fill="#fff"/><text x="50" y="64" font-size="46" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial">₹</text></svg>
+      </div>
+      <div>
+        Payswift
+        <div class="credit-line">Created by Omraj Gupta</div>
+      </div>
+    </div>
+    <nav class="links">
+      <a href="#about">About</a>
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#screenshots">Screenshots</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="header-actions">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
+      <a class="btn btn-brand" href="https://www.dropbox.com/scl/fi/2u6a6g6v20zxz5s4do4ku/DOC-20260728-WA0005.apk?rlkey=4iocsdjurnvktzwl9xkhazlfp&st=f6yt9yr8&dl=1" target="_blank" rel="noopener">Download App</a>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+    </div>
+  </div>
+  <div id="mobile-nav">
+    <a href="#about">About</a>
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#screenshots">Screenshots</a>
+    <a href="#privacy">Privacy</a>
+    <a href="#contact">Contact</a>
+  </div>
+</header>
+
+<section class="hero-section">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow"><span class="dot"></span> Offline-first · Works without internet</div>
+      <h1>Payswift — <span class="accent">Smart Payment Reminder</span> App</h1>
+      <p class="lede">Manage customer payments, track dues and send reminders easily.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-brand" id="download" href="https://www.dropbox.com/scl/fi/2u6a6g6v20zxz5s4do4ku/DOC-20260728-WA0005.apk?rlkey=4iocsdjurnvktzwl9xkhazlfp&st=f6yt9yr8&dl=1" target="_blank" rel="noopener">⬇ Download App</a>
+        <a class="btn btn-outline" href="#features">Explore Features</a>
+      </div>
+
+      <div class="quicklinks">
+        <div class="quicklink"><div class="ic">🧾</div><span>Create Invoices</span></div>
+        <div class="quicklink"><div class="ic">👥</div><span>Manage Customers</span></div>
+        <div class="quicklink"><div class="ic">🔔</div><span>Send Reminders</span></div>
+        <div class="quicklink"><div class="ic">📊</div><span>Track Payments</span></div>
+      </div>
+
+      <div class="secure-badge">
+        <div class="shield">✓</div>
+        <div>
+          <div class="t">100% Secure</div>
+          <div class="s">Your data, our priority</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone-stage">
+      <div class="deco-chart"><b style="height:30px;"></b><b style="height:52px;"></b><b style="height:80px;"></b></div>
+      <div class="deco-coin c2">₹</div>
+      <div class="deco-coin c1">₹</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="p-topbar">
+            <div class="p-brand">
+              <div class="mini-logo">
+                <svg width="14" height="14" viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="none" stroke="#fff" stroke-width="9"/><text x="50" y="65" font-size="50" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial">₹</text></svg>
+              </div>
+              Payswift
+            </div>
+            <span>⚙️</span>
+          </div>
+          <div class="p-hello">Hello 👋</div>
+          <div class="p-date">Thursday, 23 Jul 2026</div>
+          <div class="p-overview">
+            <div class="lbl">Overview</div>
+            <div class="stats">
+              <div class="stat"><div class="n">0</div><div class="l">Total<br>Customers</div></div>
+              <div class="stat"><div class="n">₹0</div><div class="l">Total<br>Amount</div></div>
+              <div class="stat"><div class="n">₹0</div><div class="l">Total<br>Received</div></div>
+            </div>
+          </div>
+          <div class="p-row2">
+            <div class="p-chip got"><div class="tag">↓ YOU GOT</div><div class="amt">₹0</div><div class="sub">Receivable</div></div>
+            <div class="p-chip gave"><div class="tag">↑ YOU GAVE</div><div class="amt">₹0</div><div class="sub">Payable</div></div>
+          </div>
+          <div class="p-recent"><span>Recent Customers</span><span>0 total</span></div>
+          <div class="p-empty">No customers yet<br>Tap + to add your first customer</div>
+          <div class="p-fab">+ Add Customer</div>
+          <div class="p-navbar">
+            <span class="active">🏠 Home</span>
+            <span>👥 Customers</span>
+            <span>🔔 Reminders</span>
+            <span>📈 Reports</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="reveal">
+  <div class="section-head">
+    <span class="kicker">About Payswift</span>
+    <h2>Built for small businesses who run on trust — and need it tracked</h2>
+  </div>
+  <div class="about-grid">
+    <div>
+      <p>Payswift is an offline payment tracking and reminder app that helps small businesses and individuals manage customer pending payments easily. Whether you run a shop, a service business, or simply lend and borrow among clients, Payswift keeps every rupee accounted for.</p>
+      <p>No internet connection is required to use the app — your entire customer ledger, payment history, and reminders are stored securely on your own device. Payswift is designed to be fast, simple, and distraction-free, so you can focus on your business instead of your books.</p>
+    </div>
+    <div class="about-stats">
+      <div class="about-stat"><div class="n">100%</div><div class="l">Offline</div></div>
+      <div class="about-stat"><div class="n">0₹</div><div class="l">Data Sent Online</div></div>
+      <div class="about-stat"><div class="n">24/7</div><div class="l">Access to Records</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="reveal">
+  <div class="section-head">
+    <span class="kicker">Key Features</span>
+    <h2>Everything you need to manage payments</h2>
+    <p>A complete, no-clutter toolkit for tracking who owes you and who you owe.</p>
+  </div>
+  <div class="feature-grid">
+    <div class="feat-card"><div class="fic">👥</div><h3>Customer Management</h3><p>Add and organize customer details — name, phone number, and outstanding balance — all in one place.</p></div>
+    <div class="feat-card"><div class="fic">⏳</div><h3>Pending Payment Tracking</h3><p>See at a glance who owes you money and who you owe, with clear due dates for every entry.</p></div>
+    <div class="feat-card"><div class="fic">📜</div><h3>Payment History</h3><p>Every transaction is logged, so you always have a complete record of past payments.</p></div>
+    <div class="feat-card"><div class="fic">🔒</div><h3>Offline Database</h3><p>Your data lives securely on your device — no internet connection required, ever.</p></div>
+    <div class="feat-card"><div class="fic">💬</div><h3>SMS Payment Reminders</h3><p>Send a quick, pre-filled SMS reminder to customers directly from their profile.</p></div>
+    <div class="feat-card"><div class="fic">⚡</div><h3>Simple &amp; Fast Interface</h3><p>A clean, intuitive design that gets you in and out in seconds — no learning curve.</p></div>
+  </div>
+</section>
+
+<section id="how-it-works" class="reveal">
+  <div class="section-head">
+    <span class="kicker">How It Works</span>
+    <h2>Three simple steps</h2>
+  </div>
+  <div class="steps">
+    <div class="step-card"><div class="step-num">1</div><h3>Add Customer Details</h3><p>Create a customer profile with their name, phone number, and the amount involved.</p></div>
+    <div class="step-card"><div class="step-num">2</div><h3>Track Pending Payments</h3><p>Monitor what's owed to you and what you owe, updated in real time as payments happen.</p></div>
+    <div class="step-card"><div class="step-num">3</div><h3>Send Reminders</h3><p>Nudge customers with a one-tap SMS reminder when a payment is due or overdue.</p></div>
+  </div>
+</section>
+
+<section id="screenshots" class="reveal">
+  <div class="section-head">
+    <span class="kicker">Screenshots</span>
+    <h2>A look inside the app</h2>
+  </div>
+  <div class="shots-row">
+    <div class="shot">
+      <div class="shot-frame">
+        <div class="shot-screen">
+          <div class="shot-bar w60"></div>
+          <div class="shot-block"></div>
+          <div class="shot-bar w80"></div>
+          <div class="shot-line green"></div>
+          <div class="shot-line red"></div>
+          <div class="shot-bar w60"></div>
+        </div>
+      </div>
+      <p>Dashboard Overview</p>
+    </div>
+    <div class="shot">
+      <div class="shot-frame">
+        <div class="shot-screen">
+          <div class="shot-bar w80"></div>
+          <div class="shot-line green"></div>
+          <div class="shot-line red"></div>
+          <div class="shot-line green"></div>
+          <div class="shot-bar w60"></div>
+          <div class="shot-line red"></div>
+        </div>
+      </div>
+      <p>Customer Ledger</p>
+    </div>
+    <div class="shot">
+      <div class="shot-frame">
+        <div class="shot-screen">
+          <div class="shot-bar w60"></div>
+          <div class="shot-block"></div>
+          <div class="shot-bar w80"></div>
+          <div class="shot-bar w60"></div>
+          <div class="shot-line red"></div>
+        </div>
+      </div>
+      <p>Reminders</p>
+    </div>
+  </div>
+</section>
+
+<section id="privacy" class="reveal">
+  <div class="privacy-card">
+    <span class="kicker" style="text-align:left;">Privacy Policy</span>
+    <h2 style="font-size:1.6rem;font-weight:800;margin:10px 0 16px;">Your data stays on your device</h2>
+    <p>Payswift is built offline-first. Customer names, phone numbers, payment amounts, and due dates are stored locally on your phone and are never uploaded to any server.</p>
+    <ul>
+      <li><span class="chk">✓</span> No customer data is transmitted over the internet.</li>
+      <li><span class="chk">✓</span> Backups, if created, are saved locally on your device.</li>
+      <li><span class="chk">✓</span> SMS reminders are sent directly from your phone's SIM — not through our servers.</li>
+      <li><span class="chk">✓</span> The app may show ads (via Google AdMob) to keep the free version running; AdMob may collect limited device and advertising-identifier data as described in Google's own privacy policy.</li>
+      <li><span class="chk">✓</span> You can request deletion of any locally stored data at any time by uninstalling the app or using the in-app reset option.</li>
+    </ul>
+    <div class="privacy-actions">
+      <a class="btn btn-brand" href="https://payswift.app/privacy-policy" target="_blank" rel="noopener">Read Full Privacy Policy ↗</a>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="reveal">
+  <div class="contact-card">
+    <h2>Get in Touch</h2>
+    <p>Questions, feedback, or support — the Payswift Team is happy to help.</p>
+    <div class="contact-row">
+      <span class="contact-pill">👤 Developer: Payswift Team</span>
+      <a class="contact-pill" href="mailto:guptagamingcompany@gmail.com">✉️ guptagamingcompany@gmail.com</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="flinks">
+    <a href="#about">About</a>
+    <a href="#features">Features</a>
+    <a href="#privacy">Privacy Policy</a>
+    <a href="#contact">Contact</a>
+  </div>
+  © 2026 Payswift. All rights reserved.
+</footer>
+
+<script>
+  // Theme toggle (persists choice)
+  (function(){
+    var root = document.documentElement;
+    var toggle = document.getElementById('themeToggle');
+    var saved = null;
+    try { saved = localStorage.getItem('payswift-theme'); } catch(e){}
+    if(saved === 'dark'){ root.setAttribute('data-theme','dark'); toggle.textContent = '☀️'; }
+    toggle.addEventListener('click', function(){
+      var isDark = root.getAttribute('data-theme') === 'dark';
+      if(isDark){
+        root.removeAttribute('data-theme');
+        toggle.textContent = '🌙';
+        try { localStorage.setItem('payswift-theme','light'); } catch(e){}
+      } else {
+        root.setAttribute('data-theme','dark');
+        toggle.textContent = '☀️';
+        try { localStorage.setItem('payswift-theme','dark'); } catch(e){}
+      }
+    });
+  })();
+
+  // Mobile nav toggle
+  (function(){
+    var btn = document.getElementById('menuBtn');
+    var nav = document.getElementById('mobile-nav');
+    btn.addEventListener('click', function(){ nav.classList.toggle('open'); });
+    nav.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ nav.classList.remove('open'); });
+    });
+  })();
+
+  // Scroll reveal
+  (function(){
+    var items = document.querySelectorAll('.reveal');
+    if(!('IntersectionObserver' in window)){
+      items.forEach(function(el){ el.classList.add('in'); });
+      return;
+    }
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('in');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    items.forEach(function(el){ obs.observe(el); });
+  })();
+</script>
+
+</body>
+</html>
